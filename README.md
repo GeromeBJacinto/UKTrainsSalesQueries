@@ -37,8 +37,76 @@ The columns are:
 The main focus of the visualization report is the Sales Performance of National Railway Company.
 Specifically, we are interested in answering the following questions.
 
+- How much is the total ticket sales of the National Railways?
+- How much is the total refunds given of the National Railways?
+- How much is the total Net Revenue of the National Railways?
+- How much is the total sales per month? per month and ticket type? per month and railcard?
+- What is the Top 5 Route in terms of Net Revenue?
+- What is the Bottom 5 Route in terms of Net Revenue?
+- What is the Top 5 Route in terms of Refunds Given?
+- How much refunds are given per Journey Status?
+- How much refunds are given per Minutes Delayed?
+- How much is the sales, refunds given, Net Revenue, and average Net Revenue per trip by Departure Station and Arrival Destination?
+
 
 
 ## Actual Visualization from PowerBI
+![image](https://github.com/user-attachments/assets/26c6c864-bf45-4fa9-ae0d-cf0d242cf9aa)
+
 
 # Validating PowerBI values via SQL queries
+**1. How much is the total ticket sales of the National Railways?**
+- PowerBI:
+  
+![image](https://github.com/user-attachments/assets/b56830ff-1f1a-4b32-b791-49636d574b77)
+
+- SQL
+```
+SELECT SUM(Price) as TotalTicketSales
+	FROM railway;
+```
+![image](https://github.com/user-attachments/assets/f62c1386-a28c-4e8d-bdfe-538b02bdb79d)
+
+**2. How much is the total refunds given of the National Railways?**
+- PowerBI:
+
+![image](https://github.com/user-attachments/assets/3084bef9-2ff8-4fbd-9fc9-bd6787fe8aca)
+
+- SQL
+```
+SELECT SUM(Price) as TotalRefundsGiven
+	FROM railway
+  WHERE RefundRequest = "Yes";
+```
+![image](https://github.com/user-attachments/assets/a8dfa081-dcf8-4486-b4ef-47354d343a53)
+
+    - Note that only price were RefundRequest = "Yes" was retrieved and summarized by this query.
+
+**3. How much is the total net revenue of the National Railways?**
+- PowerBI:
+
+![image](https://github.com/user-attachments/assets/d3bfe2b4-76d3-4b58-9b38-6bc51649b077)
+
+- SQL
+```
+SELECT sum(price) - SUM(CASE WHEN RefundRequest = "Yes" then price end) as NetRevenue
+  FROM railway;
+```
+![image](https://github.com/user-attachments/assets/3ad66e6f-efa6-454c-93ca-dfa5dd2e0f08)
+
+    - We can also get the same results by getting the sum of all price were RefundRequest = "No".
+
+**4. How much is the total sales per month?**
+- PowerBI:
+  
+![image](https://github.com/user-attachments/assets/a70db094-c6ae-4a39-9888-941c12858ffd)
+
+- SQL:
+
+```
+SELECT MONTHNAME(DateofJourney) as months, SUM(price) as sales
+	FROM railway
+    GROUP BY months;
+```
+
+![image](https://github.com/user-attachments/assets/1a598b06-e7f0-43e3-8e3c-0b9cf3a134d2)
