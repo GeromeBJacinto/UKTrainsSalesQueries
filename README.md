@@ -143,5 +143,57 @@ SELECT MONTHNAME(DateofJourney) as Months, Railcard, CONCAT("$",SUM(price)) as S
 
 ![image](https://github.com/user-attachments/assets/a75a8348-3bf0-499a-8837-f715749ab2a7)
 
+**5. What is the Top 5 Route in terms of Net Revenue?**
+- PowerBI:
+  
+![image](https://github.com/user-attachments/assets/b1e53078-d2cc-4435-981a-7efc499816ff)
 
+- SQL:
+
+```
+SELECT CONCAT(DepartureStation, " - ", ArrivalDestination) as Route, 
+COALESCE(CONCAT("$",SUM(CASE WHEN RefundRequest = "No" THEN price END)),"$0") as NetRevenue
+	FROM railway
+    GROUP BY Route
+    ORDER BY SUM(CASE WHEN RefundRequest = "No" THEN price END) DESC
+    LIMIT 5;
+```
+
+![image](https://github.com/user-attachments/assets/9653573c-24e1-4161-8f5c-510acd0921e4)
+
+**6.What is the Bottom 5 Route in terms of Net Revenue?**
+- PowerBI:
+  
+![image](https://github.com/user-attachments/assets/d953aab6-f42b-4395-9002-2a61ea5c2190)
+
+- SQL:
+
+```
+SELECT CONCAT(DepartureStation, " - ", ArrivalDestination) as Route, 
+ COALESCE(CONCAT("$",SUM(CASE WHEN RefundRequest = "No" THEN price END)),"$0") as NetRevenue
+	FROM railway
+    GROUP BY Route
+    ORDER BY SUM(CASE WHEN RefundRequest = "No" THEN price END) 
+    LIMIT 5;
+```
+
+![image](https://github.com/user-attachments/assets/045f1e13-b88d-439e-861a-b6444865096c)
+
+**7.What is the Top 5 Route in terms of Refunds Given?**
+- PowerBI:
+  
+![image](https://github.com/user-attachments/assets/65dc9f03-0851-422e-880d-387b5f4c3475)
+
+- SQL:
+
+```
+SELECT CONCAT(DepartureStation, " - ", ArrivalDestination) as Route, 
+COALESCE(CONCAT("$",SUM(CASE WHEN RefundRequest = "Yes" THEN price END)),"$0") as RefundsGiven
+	FROM railway
+    GROUP BY Route
+    ORDER BY SUM(CASE WHEN RefundRequest = "Yes" THEN price END) DESC 
+    LIMIT 5;
+```
+
+![image](https://github.com/user-attachments/assets/494c01a3-1a0c-48a0-a41f-42368ace9e8a)
 
