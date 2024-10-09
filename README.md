@@ -51,7 +51,7 @@ Specifically, we are interested in answering the following questions.
 
 
 ## Actual Visualization from PowerBI
-![image](https://github.com/user-attachments/assets/26c6c864-bf45-4fa9-ae0d-cf0d242cf9aa)
+![image](https://github.com/user-attachments/assets/dac9d888-5480-42f4-9594-1c92dd79e895)
 
 
 # Validating PowerBI values via SQL queries
@@ -62,10 +62,10 @@ Specifically, we are interested in answering the following questions.
 
 - SQL
 ```
-SELECT SUM(Price) as TotalTicketSales
+SELECT CONCAT("$",SUM(Price)) AS Sales
 	FROM railway;
 ```
-![image](https://github.com/user-attachments/assets/f62c1386-a28c-4e8d-bdfe-538b02bdb79d)
+![image](https://github.com/user-attachments/assets/f7fe1323-41b9-4241-93f2-d2e8d970e71d)
 
 **2. How much is the total refunds given of the National Railways?**
 - PowerBI:
@@ -74,11 +74,11 @@ SELECT SUM(Price) as TotalTicketSales
 
 - SQL
 ```
-SELECT SUM(Price) as TotalRefundsGiven
+SELECT CONCAT("$",SUM(Price)) as RefundsGiven
 	FROM railway
-  WHERE RefundRequest = "Yes";
+    WHERE RefundRequest = "Yes";
 ```
-![image](https://github.com/user-attachments/assets/a8dfa081-dcf8-4486-b4ef-47354d343a53)
+![image](https://github.com/user-attachments/assets/7a7abd08-0508-4b23-bd80-5fad99b4f2bd)
 
     - Note that only price were RefundRequest = "Yes" was retrieved and summarized by this query.
 
@@ -89,14 +89,16 @@ SELECT SUM(Price) as TotalRefundsGiven
 
 - SQL
 ```
-SELECT sum(price) - SUM(CASE WHEN RefundRequest = "Yes" then price end) as NetRevenue
-  FROM railway;
+SELECT CONCAT("$",SUM(price) - SUM(CASE WHEN RefundRequest = "Yes" THEN price END)) as NetRevenue
+    FROM railway;
 ```
-![image](https://github.com/user-attachments/assets/3ad66e6f-efa6-454c-93ca-dfa5dd2e0f08)
+![image](https://github.com/user-attachments/assets/d7b1b596-ba29-4a99-b097-172b426a5b1b)
 
     - We can also get the same results by getting the sum of all price were RefundRequest = "No".
 
-**4. How much is the total sales per month?**
+**4. How much is the total sales per month?per month and ticket type? per month and railcard?**
+
+- **Total Sales Per Month**
 - PowerBI:
   
 ![image](https://github.com/user-attachments/assets/a70db094-c6ae-4a39-9888-941c12858ffd)
@@ -104,9 +106,42 @@ SELECT sum(price) - SUM(CASE WHEN RefundRequest = "Yes" then price end) as NetRe
 - SQL:
 
 ```
-SELECT MONTHNAME(DateofJourney) as months, SUM(price) as sales
+SELECT MONTHNAME(DateofJourney) as Months, CONCAT("$",SUM(price)) as Sales
 	FROM railway
     GROUP BY months;
 ```
 
-![image](https://github.com/user-attachments/assets/1a598b06-e7f0-43e3-8e3c-0b9cf3a134d2)
+![image](https://github.com/user-attachments/assets/0142eb0c-8a94-46a2-ac5f-d2569ab9c38b)
+
+- **Total Sales Per Month and Ticket Type**
+- PowerBI:
+  
+![image](https://github.com/user-attachments/assets/6fbc7fbf-0b42-4634-b103-ec3d50a03252)
+
+- SQL:
+
+```
+SELECT monthname(DateofJourney) as Months, TicketType, CONCAT("$",SUM(price)) as Sales
+	FROM railway
+	GROUP BY months, TicketType;
+```
+
+![image](https://github.com/user-attachments/assets/12723557-ab99-4f4c-bd7f-2c8655424dd0)
+
+- **Total Sales Per Month and Railcard**
+- PowerBI:
+  
+![image](https://github.com/user-attachments/assets/1da4c65f-050c-48c8-92f0-d35e1ad9cfc3)
+
+- SQL:
+
+```
+SELECT MONTHNAME(DateofJourney) as Months, Railcard, CONCAT("$",SUM(price)) as Sales
+	FROM railway
+    GROUP BY months, Railcard;
+```
+
+![image](https://github.com/user-attachments/assets/a75a8348-3bf0-499a-8837-f715749ab2a7)
+
+
+
