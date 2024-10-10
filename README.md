@@ -197,3 +197,93 @@ COALESCE(CONCAT("$",SUM(CASE WHEN RefundRequest = "Yes" THEN price END)),"$0") a
 
 ![image](https://github.com/user-attachments/assets/494c01a3-1a0c-48a0-a41f-42368ace9e8a)
 
+
+
+**8.How much refunds are given per Journey Status?**
+- PowerBI:
+  
+![image](https://github.com/user-attachments/assets/a8d84d50-6aea-4cc8-b747-ead1d19e8631)
+
+- SQL:
+
+```
+SELECT JourneyStatus, CONCAT("$",SUM(price)) as Refunds
+	FROM railway
+     WHERE RefundRequest = "Yes"
+     GROUP BY JourneyStatus;
+```
+
+![image](https://github.com/user-attachments/assets/132f417b-83b1-458a-ba7a-e6b97500ed11)
+
+**9.How much refunds are given per Minutes Delayed?**
+- PowerBI:
+  
+![image](https://github.com/user-attachments/assets/38789208-223b-4bd4-be6a-4cdd99a33cca)
+
+- SQL:
+
+```
+SELECT 
+CASE WHEN TIMESTAMPDIFF(MINUTE,ArrivalTime,ActualArrivalTime) = 0  then "0" 
+WHEN TIMESTAMPDIFF(MINUTE,ArrivalTime,ActualArrivalTime) between 1 and 4 then "01-04"
+WHEN TIMESTAMPDIFF(MINUTE,ArrivalTime,ActualArrivalTime) between 5 and 15 then "05-15"
+WHEN TIMESTAMPDIFF(MINUTE,ArrivalTime,ActualArrivalTime) between 16 and 30 then "16-30"
+WHEN TIMESTAMPDIFF(MINUTE,ArrivalTime,ActualArrivalTime) between 31 and 59 then "31-60"
+WHEN TIMESTAMPDIFF(MINUTE,ArrivalTime,ActualArrivalTime) between 60 and 1000 then "60 and above"
+END AS MinutesDelayed, 
+CONCAT("$",SUM(price)) AS TotalSales, 
+CONCAT("$",SUM(CASE WHEN RefundRequest LIKE "%Yes%" THEN price ELSE 0 END)) as RefundsGiven
+FROM railway
+WHERE JourneyStatus = "Delayed"
+GROUP BY MinutesDelayed
+ORDER BY MinutesDelayed;
+```
+
+    - Note that we used TIMESTAMPDIFF to get the difference between the ArrivalTime and ActualArrivalTime.
+    - This allows us to get their difference in minutes, hence the delay.
+    
+![image](https://github.com/user-attachments/assets/a97eb3af-e7ca-4e39-88e8-05aede47a92c)
+
+
+**10. How much is the sales, refunds given, Net Revenue, and average Net Revenue per trip by Departure Station and Arrival Destination?**
+- PowerBI:
+  
+![image](https://github.com/user-attachments/assets/240d9759-4823-4dbd-bde3-8a5bfed6dc18)
+
+- SQL:
+
+```
+CREATE TABLE trips AS
+SELECT CONCAT(DepartureStation, " - ", ArrivalDestination) AS Route,
+	COUNT(DISTINCT  DateofJourney,DepartureTime,ArrivalTime,ActualArrivalTime,DepartureStation,ArrivalDestination,JourneyStatus) AS Count
+    FROM railway
+    GROUP BY route
+    ORDER BY DepartureStation, ArrivalDestination;
+```
+
+    - Create TRIPS table to get count of trips per route.
+    - Note that we will get the count per route upon unique combination of DateofJourney, DepartureTime, ArrivalTime, ActualArrivalTime, DepartureStation, ArrivalDestination, and JourneyStatus
+
+```
+CREATE TABLE initial AS
+SELECT CONCAT(DepartureStation, " - ", ArrivalDestination) AS Route,
+	SUM(price) AS Sales, SUM(CASE WHEN RefundRequest = "Yes" THEN price ELSE 0 END) AS Refund, 
+    sum(CASE WHEN RefundRequest = "No" THEN price ELSE 0 END) AS Revenue
+    FROM railway
+    GROUP BY route
+    ORDER BY DepartureStation, ArrivalDestination;
+```
+
+    - Compute Sales, Refund,Revenue per Route on a different table.
+
+```
+SELECT a.route, CONCAT("$",a.Sales) as Sales, CONCAT("$",a.Refund) as Refunds, CONCAT("$",a.Revenue) as NetRevenue, 
+CONCAT("$",a.Revenue/b.Count) AS AverageRevenuePerTrip
+FROM initial as a
+LEFT JOIN trips as b
+ON a.route = b.route;
+```
+
+ - Join the tables. Divide the revenue by the trips count to get Average Revenue per Trip.
+
+![image](https://github.com/user-attachments/assets/22d39efc-4dd1-4d66-b8da-ac5692af76ea)
